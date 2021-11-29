@@ -118,12 +118,17 @@ public class ServerThread extends Thread{
                 				doMessage("error:cannot");
                 			else
                 			{
-                				int n = Integer.parseInt(tokens[1]);
-                				rooms.get(curRoom).castChannel("visible:" + rooms.get(curRoom).getTurn() + SPLITER + n);
-	                			rooms.get(curRoom).setScore(n);
-	                			rooms.get(curRoom).castChannel(rooms.get(curRoom).printGameInfo());
-	                			if (rooms.get(curRoom).isFinished())
-	                				rooms.get(curRoom).castChannel("message:Server:½ÂÀÚ´Â " + rooms.get(curRoom).getUserName((rooms.get(curRoom).getWinner())) + "´Ô ÀÔ´Ï´Ù!");
+                				if (Integer.parseInt(tokens[1].split(SPLITER)[0]) != rooms.get(curRoom).getTurn())
+                					doMessage("error:cannot");
+                				else
+                				{
+	                				int n = Integer.parseInt(tokens[1].split(SPLITER)[1]);
+	                				rooms.get(curRoom).castChannel("visible:" + rooms.get(curRoom).getTurn() + SPLITER + n);
+		                			rooms.get(curRoom).setScore(n);
+		                			rooms.get(curRoom).castChannel(rooms.get(curRoom).printGameInfo());
+		                			if (rooms.get(curRoom).isFinished())
+		                				rooms.get(curRoom).castChannel("message:Server:½ÂÀÚ´Â " + rooms.get(curRoom).getUserName((rooms.get(curRoom).getWinner())) + "´Ô ÀÔ´Ï´Ù!");
+                				}
                 			}
                 		}
                 	}
