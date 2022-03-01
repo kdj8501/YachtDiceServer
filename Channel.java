@@ -11,210 +11,140 @@ public class Channel {
 	private int numUsers;
 	private static final String SPLITER = "#!#";
 	private int[] diceval;
-	private int[] user1val;
-	private int[] user2val;
-	private int[] user1tmp;
-	private int[] user2tmp;
+	ArrayList<score> users;
 	private boolean isStart;
 	private int turn;
 	private int rollcount;
 	private int round;
 	
-	public Channel(String name)
-	{
+	public Channel(String name) {
 		this.name = name;
 		userID = new ArrayList<String>();
 		PrintWriters = new ArrayList<PrintWriter>();
-		maxUsers = 2;
+		maxUsers = 4;
 		numUsers = 0;
+		users = new ArrayList<score>();
 		diceval = new int[10];
-		user1val = new int[15];
-		user2val = new int[15];
-		user1tmp = new int[15];
-		user2tmp = new int[15];
 		isStart = false;
 		turn = 0;
 		rollcount = 0;
 		round = 0;
-		for (int i = 0; i < 15; i++)
-		{
-			user1val[i] = 0;
-			user2val[i] = 0;
-			user1tmp[i] = 0;
-			user2tmp[i] = 0;
-			if (i < 10)
-				diceval[i] = 0;
-		}
+		for (int i = 0; i < 10; i++)
+			diceval[i] = 0;
 	}
 	
-	public void diceFix(int n)
-	{
+	public void diceFix(int n) {
 		diceval[n] = diceval[n + 5];
 		diceval[n + 5] = 0;
 	}
 	
-	public void diceUnfix(int n)
-	{
+	public void diceUnfix(int n) {
 		diceval[n + 5] = diceval[n];
 		diceval[n] = 0;
 	}
 	
-	public void addUser(String str, PrintWriter writer)
-	{
+	public void addUser(String str, PrintWriter writer) {
 		userID.add(str);
 		PrintWriters.add(writer);
 		numUsers++;
 	}
 	
-	public void delUser(String str, PrintWriter writer)
-	{
+	public void delUser(String str, PrintWriter writer) {
 		userID.remove(str);
 		PrintWriters.remove(writer);
 		numUsers--;
 	}
 	
-	public void castChannel(String data)
-    {
-        for(PrintWriter writer : PrintWriters)
-        {
+	public void castChannel(String data) {
+        for(PrintWriter writer : PrintWriters) {
             writer.println(data);
             writer.flush();
         }
     }
 	
-	public String getUserList()
-	{
+	public String getUserList() {
 		String str = "";
 		for (String tmp : userID)
 			str = str + tmp + SPLITER;
 		return str;
 	}
 	
-	public void rollDice()
-	{
-		rollcount++;
+	public void rollDice() {
 		Random random = new Random();
 	    random.setSeed(System.currentTimeMillis());
 		for (int i = 5; i < 10; i++)
 			if (diceval[i - 5] == 0)
 				diceval[i] = random.nextInt(6) + 1;
+		rollcount++;
 	}
 	
-	public void setScore(int n)
-	{
-		if (turn == 0)
-		{
-			user1val[n] = evaluate(n);
-			user1val[6] = user1val[0] + user1val[1] + user1val[2] + user1val[3] + user1val[4] + user1val[5];
-			user1val[7] = user1val[6] >= 63 ? 35 : 0;
-			user1val[14] = user1val[6] + user1val[7] + user1val[8] + user1val[9] + user1val[10] + user1val[11] + user1val[12] + user1val[13];
-		}
-		else
-		{
-			user2val[n] = evaluate(n);
-			user2val[6] = user2val[0] + user2val[1] + user2val[2] + user2val[3] + user2val[4] + user2val[5];
-			user2val[7] = user2val[6] >= 63 ? 35 : 0;
-			user2val[14] = user2val[6] + user2val[7] + user2val[8] + user2val[9] + user2val[10] + user2val[11] + user2val[12] + user2val[13];
-		}
+	public void setScore(int n) {
+		users.get(turn).setScore(n, evaluate(n));
+		users.get(turn).setSubTotal();
+		users.get(turn).setBonus();
+		users.get(turn).setTotal();
 		for (int i = 0; i < 10; i++)
 			diceval[i] = 0;
-		for (int i = 0; i < 15; i++)
-		{
-			user1tmp[i] = 0;
-			user2tmp[i] = 0;
-		}
-		turn = turn == 0 ? 1 : 0;
+		turn = (turn + 1) % numUsers;
 		rollcount = 0;
 		round++;
 	}
 	
-	public void setTmpScore()
-	{
-		for (int i = 0; i < 15; i++)
-		{
-			user1tmp[i] = user1val[i];
-			user2tmp[i] = user2val[i];
-			if (turn == 0)
-			{
-				if (i != 6 && i != 7 && i != 14 && user1tmp[i] != 0)
-					user1tmp[i] = evaluate(i);
-			}
-			else
-			{
-				if (i != 6 && i != 7 && i != 14 && user2tmp[i] != 0)
-					user2tmp[i] = evaluate(i);
-			}
-		}
-	}
-	
-	public int evaluate(int n)
-	{
+	public int evaluate(int n) {
 		int result = 0;
-		if (n == 0)
-		{
+		if (n == 0) {
 			for (int i = 0; i < 5; i++)
 				if (diceval[i] == 1)
 					result += 1;
 		}
-		else if (n == 1)
-		{
+		else if (n == 1) {
 			for (int i = 0; i < 5; i++)
 				if (diceval[i] == 2)
 					result += 2;
 		}
-		else if (n == 2)
-		{
+		else if (n == 2) {
 			for (int i = 0; i < 5; i++)
 				if (diceval[i] == 3)
 					result += 3;
 		}
-		else if (n == 3)
-		{
+		else if (n == 3) {
 			for (int i = 0; i < 5; i++)
 				if (diceval[i] == 4)
 					result += 4;
 		}
-		else if (n == 4)
-		{
+		else if (n == 4) {
 			for (int i = 0; i < 5; i++)
 				if (diceval[i] == 5)
 					result += 5;
 		}
-		else if (n == 5)
-		{
+		else if (n == 5) {
 			for (int i = 0; i < 5; i++)
 				if (diceval[i] == 6)
 					result += 6;
 		}
-		else if (n == 8)
-		{ // Choice
+		else if (n == 8) { // Choice
 			for (int i = 0; i < 5; i++)
 				result += diceval[i];
 		}
-		else if (n == 9)
-		{ // 4 of a kind
+		else if (n == 9) { // 4 of a kind
 			if (isFourKind())
 				for (int i = 0; i < 5; i++)
 					result += diceval[i];
 		}
-		else if (n == 10)
-		{ // Full House
+		else if (n == 10) { // Full House
 			if (isFullHouse())
 				for (int i = 0; i < 5; i++)
 					result += diceval[i];
 		}
-		else if (n == 11)
-		{ // S. Straight
+		else if (n == 11) { // S. Straight
 			if (isSmallStraight())
 				result = 15;
 		}
-		else if (n == 12)
-		{ // L. Straight
+		else if (n == 12) { // L. Straight
 			if (isLargeStraight())
 				result = 30;
 		}
-		else
-		{ // Yacht
+		else { // Yacht
 			if (diceval[0] == diceval[1] && diceval[0] == diceval[2] && diceval[0] == diceval[3] && diceval[0] == diceval[4])
 				result = 50;
 		}
@@ -222,8 +152,7 @@ public class Channel {
 		return result;
 	}
 	
-	private boolean isFourKind()
-	{
+	private boolean isFourKind() {
 		int swap;
 		int[] tmp = new int[5];
 		for (int i = 0; i < 5; i++)
@@ -244,8 +173,7 @@ public class Channel {
 			return false;
 	}
 	
-	private boolean isFullHouse()
-	{
+	private boolean isFullHouse() {
 		int swap;
 		int[] tmp = new int[5];
 		for (int i = 0; i < 5; i++)
@@ -253,8 +181,7 @@ public class Channel {
 		
 		for (int i = 0; i < 4; i++)
 			for (int j = i; j < 5; j++)
-				if (tmp[i] > tmp[j])
-				{
+				if (tmp[i] > tmp[j]) {
 					swap = tmp[i];
 					tmp[i] = tmp[j];
 					tmp[j] = swap;
@@ -266,8 +193,7 @@ public class Channel {
 			return false;
 	}
 	
-	private boolean isSmallStraight()
-	{
+	private boolean isSmallStraight() {
 		int swap;
 		int[] tmp = new int[5];
 		for (int i = 0; i < 5; i++)
@@ -275,8 +201,7 @@ public class Channel {
 		
 		for (int i = 0; i < 4; i++)
 			for (int j = i; j < 5; j++)
-				if (tmp[i] > tmp[j])
-				{
+				if (tmp[i] > tmp[j]) {
 					swap = tmp[i];
 					tmp[i] = tmp[j];
 					tmp[j] = swap;
@@ -284,10 +209,8 @@ public class Channel {
 		
 		int count = 0;
 		
-		for (int i = 0; i< 4; i++)
-		{
-			if (tmp[i] == tmp[i + 1] || tmp[i] == (tmp[i + 1] - 1))
-			{
+		for (int i = 0; i< 4; i++) {
+			if (tmp[i] == tmp[i + 1] || tmp[i] == (tmp[i + 1] - 1)) {
 				count++;
 				if (count >= 3)
 					break;
@@ -302,8 +225,7 @@ public class Channel {
 			return false;
 	}
 	
-	private boolean isLargeStraight()
-	{
+	private boolean isLargeStraight() {
 		int swap;
 		int[] tmp = new int[5];
 		for (int i = 0; i < 5; i++)
@@ -311,8 +233,7 @@ public class Channel {
 		
 		for (int i = 0; i < 4; i++)
 			for (int j = i; j < 5; j++)
-				if (tmp[i] > tmp[j])
-				{
+				if (tmp[i] > tmp[j]) {
 					swap = tmp[i];
 					tmp[i] = tmp[j];
 					tmp[j] = swap;
@@ -324,62 +245,53 @@ public class Channel {
 			return false;
 	}
 	
-	public int getWinner()
-	{
-		int result = user1val[14] > user2val[14] ? 0 : 1;
-		if (user1val[14] == user2val[14])
-			result = 2;
+	public String getWinner() {
+		String str = "";
+		int maxScore = -1, lastIdx = -1;
+		for (score x : users) {
+			maxScore = x.getTotal() > maxScore ? x.getTotal() : maxScore;
+			if (maxScore == x.getTotal())
+				lastIdx = users.indexOf(x);
+		}
+		for (score x : users)
+			if (x.getTotal() == maxScore) {
+				if (users.indexOf(x) == lastIdx)
+					str = str + x.getName();
+				else
+					str = str + x.getName() + ", ";
+			}
 		gameStop();
-		return result;
-	}
-	
-	public String printGameInfo()
-	{
-		String str = "game:";
-		for (int i = 0; i < 10; i++)
-			str = str + diceval[i] + SPLITER;
-		for (int i = 0; i < 15; i++)
-			str = str + user1val[i] + SPLITER;
-		for (int i = 0; i < 15; i++)
-			str = str + user2val[i] + SPLITER;
-		str = str + rollcount;
 		return str;
 	}
 	
-	public String printTmpInfo()
-	{
-		setTmpScore();
+	public String printGameInfo() {
 		String str = "game:";
 		for (int i = 0; i < 10; i++)
 			str = str + diceval[i] + SPLITER;
-		for (int i = 0; i < 15; i++)
-			str = str + user1tmp[i] + SPLITER;
-		for (int i = 0; i < 15; i++)
-			str = str + user2tmp[i] + SPLITER;
-		str = str + rollcount;
+		for (score x : users)
+			for (int i = 0; i < 15; i++)
+				str = str + x.getScore(i) + SPLITER;
+		str = str + rollcount + SPLITER + turn;
 		return str;
 	}
 	
-	public void gameStart()
-	{
+	public void gameStart() {
 		isStart = true;
 		turn = 0;
 		rollcount = 0;
 		round = 0;
-		for (int i = 0; i < 15; i++)
-		{
-			user1val[i] = 0;
-			user2val[i] = 0;
-			user1tmp[i] = 0;
-			user2tmp[i] = 0;
-			if (i < 10)
-				diceval[i] = 0;
-		}
-		castChannel(printGameInfo());
-		castChannel("game:reset");
+		for (int i = 0; i < 10; i++)
+			diceval[i] = 0;
+		users.clear();
+		for (String x : userID)
+			users.add(new score(x));
+		castChannel("game:start");
 	}
 	
-	public void gameStop() { isStart = false; }
+	public void gameStop() {
+		isStart = false;
+		castChannel("game:reset");
+	}
 	
 	public String getName() { return name; }
 	public int getMaxUsers() { return maxUsers; }
@@ -389,11 +301,11 @@ public class Channel {
 	public boolean isUserExist(PrintWriter writer) { return PrintWriters.indexOf(writer) != -1; }
 	public boolean isStarted() { return isStart; }
 	public boolean isRollable() { return rollcount < 3; }
-	public boolean isFinished() { return round == 24; }
+	public boolean isFinished() { return round == 12 * numUsers; }
 	public int getTurn() { return turn; }
 	public boolean isFixable(int n) { return diceval[n] == 0; }
 	public boolean isUnfixable(int n) { return diceval[n + 5] == 0; }
-	public boolean isSetable() { return (diceval[0] != 0 && diceval[1] != 0 && diceval[2] != 0 && diceval[3] != 0 && diceval[4] != 0); }
+	public boolean isSetable(int id, int val) { return (diceval[0] != 0 && diceval[1] != 0 && diceval[2] != 0 && diceval[3] != 0 && diceval[4] != 0 && users.get(id).getScore(val) == -1); }
 	public int getUserIndex(String name) { return userID.indexOf(name); }
 	public String getUserName(int n) { return userID.get(n); }
 }
