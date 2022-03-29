@@ -47,8 +47,10 @@ public class MainServer {
 		            	socket.close();
 		            }
 	        	}
-	        	else
+	        	else {
 	        		writer.println("connect:error");
+	        		writer.flush();
+	        	}
 	        }
 	    } catch(Exception e) {
 	        e.printStackTrace();
@@ -68,7 +70,7 @@ public class MainServer {
 		String formatedNow = now.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
 		System.out.println("[" + formatedNow + "] " + msg);
 		try {
-			File file = new File("yachtlog.txt");
+			File file = new File("./yachtlog.txt");
 			if (!file.exists())
 				file.createNewFile();
 			FileWriter fw = new FileWriter(file, true);
