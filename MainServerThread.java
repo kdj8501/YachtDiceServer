@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -165,8 +164,8 @@ public class MainServerThread extends Thread{
                 		else {
                 			if (rooms.get(curRoom).isStarted())
                 				doMessage("error:start");
-                			else if (rooms.get(curRoom).getNumUsers() < 2)
-                				doMessage("error:notyet");
+                			//else if (rooms.get(curRoom).getNumUsers() < 2)
+                				//doMessage("error:notyet");
                 			else {
 	                			rooms.get(curRoom).gameStart();
 	                			rooms.get(curRoom).castChannel("message:Server:게임을 시작합니다.");

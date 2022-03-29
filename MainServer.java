@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 
 public class MainServer {
 	private static final int PORT = 7778;
@@ -24,25 +26,29 @@ public class MainServer {
 	        	String nickname;
 	            Socket socket = serverSocket.accept();
 	        	BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-	            nickname = br.readLine();
-	            PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
-	            if (users.indexOf(nickname) == -1) {
-	            	writer.println("connect:able");
-	            	writer.flush();
-	            	writer.println("chact:1");
-	            	writer.flush();
-	            	users.add(nickname);
-	            	lobby.addUser(nickname, writer);
-	        	    consolelog(nickname + " Connect");
-	        	    lobby.castChannel("message:" + nickname + "님이 로비에 입장하셨습니다.");
-	        	    lobby.castChannel("users:" + lobby.getUserList());
-	            	new MainServerThread(socket, nickname, writer, users, lobby, rooms).start();
-	            }
-	            else {
-	            	writer.println("connect:unable");
-	            	writer.flush();
-	            	socket.close();
-	            }
+	        	PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+	        	if (br.readLine().split(":")[0].equals("name")) {
+		            nickname = br.readLine().split(":")[1];
+		            if (users.indexOf(nickname) == -1) {
+		            	writer.println("connect:able");
+		            	writer.flush();
+		            	writer.println("chact:1");
+		            	writer.flush();
+		            	users.add(nickname);
+		            	lobby.addUser(nickname, writer);
+		        	    consolelog(nickname + " Connect");
+		        	    lobby.castChannel("message:" + nickname + "님이 로비에 입장하셨습니다.");
+		        	    lobby.castChannel("users:" + lobby.getUserList());
+		            	new MainServerThread(socket, nickname, writer, users, lobby, rooms).start();
+		            }
+		            else {
+		            	writer.println("connect:unable");
+		            	writer.flush();
+		            	socket.close();
+		            }
+	        	}
+	        	else
+	        		writer.println("connect:error");
 	        }
 	    } catch(Exception e) {
 	        e.printStackTrace();
@@ -57,10 +63,20 @@ public class MainServer {
         }
 	}
 	
-	public static void consolelog(String msg)
-	{
+	public static void consolelog(String msg) {
 		LocalDateTime now = LocalDateTime.now();
 		String formatedNow = now.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
 		System.out.println("[" + formatedNow + "] " + msg);
+		try {
+			File file = new File("yachtlog.txt");
+			if (!file.exists())
+				file.createNewFile();
+			FileWriter fw = new FileWriter(file, true);
+			PrintWriter writer = new PrintWriter(fw);
+			writer.println("[" + formatedNow + "] " + msg);
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
