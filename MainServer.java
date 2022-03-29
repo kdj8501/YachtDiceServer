@@ -27,8 +27,9 @@ public class MainServer {
 	            Socket socket = serverSocket.accept();
 	        	BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
 	        	PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
-	        	if (br.readLine().split(":")[0].equals("name")) {
-		            nickname = br.readLine().split(":")[1];
+	        	String buf = br.readLine();
+	        	if (buf.split(":")[0].equals("name")) {
+		            nickname = buf.split(":")[1];
 		            if (users.indexOf(nickname) == -1) {
 		            	writer.println("connect:able");
 		            	writer.flush();
