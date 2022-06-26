@@ -209,7 +209,7 @@ public class Channel {
 		
 		for (int i = 0; i < 4; i++)
 			if (tmp[i] == tmp[i + 1])
-				for (int j = i + 1; j < 5; j++)
+				for (int j = i + 1; j < 4; j++)
 					tmp[j] = tmp [j + 1];
 		
 		if (((tmp[3] == tmp[2] + 1) && (tmp[2] == tmp[1] + 1) && (tmp[1] == tmp[0] + 1)) || ((tmp[4] == tmp[3] + 1) && (tmp[3] == tmp[2] + 1) && (tmp[2] == tmp[1] + 1)))
